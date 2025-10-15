@@ -10,7 +10,6 @@ import java.util.*;
 public class ClassroomManager {
     private final Map<String, Classroom> classrooms = new HashMap<>();
     private final Map<String, Student> students = new HashMap<>();
-    private final List<Assignment> assignments = new ArrayList<>();
     private boolean running = true;
 
     public String addClassroom(String className) {
@@ -45,31 +44,33 @@ public class ClassroomManager {
             classroom.addStudent(studentId);
             Logger.info("Student enrolled: " + studentId + " in " + className);
             return "Student " + studentId + " has been enrolled in " + className + ".";
-        } else {
-            return "Student " + studentId + " is already enrolled in " + className + ".";
         }
+        return "Student " + studentId + " is already enrolled in " + className + ".";
+
     }
 
-    public String scheduleAssignment(String className, String details) {
+    public String scheduleAssignment(String className, String assignmentId) {
         ValidationService.validateClassName(className);
-        ValidationService.validateAssignmentDetails(details);
+        ValidationService.validateAssignment(assignmentId);
 
         if (!classrooms.containsKey(className)) {
             throw new IllegalArgumentException("Classroom '" + className + "' not found");
         }
 
-        Assignment assignment = new Assignment(className, details);
-        classrooms.get(className).addAssignment(details);
-        assignments.add(assignment);
+        Classroom classroom = classrooms.get(className);
 
-        Logger.info("Assignment scheduled for " + className + ": " + details);
-        return "Assignment for " + className + " has been scheduled.";
+        if (classroom.addAssignment(assignmentId)) {
+            Assignment assignment = new Assignment(className, assignmentId);
+            Logger.info("Assignment scheduled for " + className + ": " + assignmentId);
+            return "Assignment for " + className + " has been scheduled.";
+        }
+        return "Assignment for " + className + " has already been scheduled.";
     }
 
-    public String submitAssignment(String studentId, String className, String details) {
+    public String submitAssignment(String studentId, String className, String assignmentId) {
         ValidationService.validateStudentId(studentId);
         ValidationService.validateClassName(className);
-        ValidationService.validateAssignmentDetails(details);
+        ValidationService.validateAssignment(assignmentId);
 
         Student student = students.get(studentId);
         if (student == null) {
@@ -86,13 +87,13 @@ public class ClassroomManager {
 
         // Check if assignment exists in the classroom
         Classroom classroom = classrooms.get(className);
-        if (!classroom.getAssignments().contains(details)) {
-            throw new IllegalArgumentException("Assignment '" + details + "' does not exist in classroom '" + className + "'");
+        if (!classroom.getAssignmentIds().contains(assignmentId)) {
+            throw new IllegalArgumentException("Assignment '" + assignmentId + "' does not exist in classroom '" + className + "'");
         }
 
-        String assignmentKey = className + ":" + details;
+        String assignmentKey = className + ":" + assignmentId;
         if (student.submitAssignment(assignmentKey)) {
-            Logger.info("Assignment submitted by " + studentId + " in " + className + ": " + details);
+            Logger.info("Assignment submitted by " + studentId + " in " + className + ": " + assignmentId);
             return "Assignment submitted by Student " + studentId + " in " + className + ".";
         } else {
             return "Assignment already submitted by Student " + studentId + " in " + className + ".";
@@ -109,7 +110,7 @@ public class ClassroomManager {
             sb.append("  - ")
                     .append(classroom.getName())
                     .append(" (Students: ").append(classroom.getStudentIds().size())
-                    .append(", Assignments: ").append(classroom.getAssignments().size())
+                    .append(", Assignments: ").append(classroom.getAssignmentIds().size())
                     .append(")\n");
         }
         return sb.toString();
@@ -143,22 +144,16 @@ public class ClassroomManager {
             throw new IllegalArgumentException("Classroom '" + className + "' not found");
         }
 
-        Set<String> assignmentDetails = classroom.getAssignments();
-        if (assignmentDetails.isEmpty()) {
+        Set<String> assignmentIds = classroom.getAssignmentIds();
+        if (assignmentIds.isEmpty()) {
             return "No assignments for " + className + ".";
         }
 
         StringBuilder sb = new StringBuilder("Assignments for " + className + ":\n");
-        for (String assignment : assignmentDetails) {
+        for (String assignment : assignmentIds) {
             sb.append("  - ").append(assignment).append("\n");
         }
         return sb.toString();
-    }
-
-    // Helper method to check if assignment exists (for testing)
-    public boolean assignmentExists(String className, String assignmentDetails) {
-        Classroom classroom = classrooms.get(className);
-        return classroom != null && classroom.getAssignments().contains(assignmentDetails);
     }
 
     public void stop() {

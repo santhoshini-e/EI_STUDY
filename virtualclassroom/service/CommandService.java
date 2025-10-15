@@ -12,7 +12,7 @@ public class CommandService {
 
     public String executeCommand(String input) {
         try {
-            String[] parts = input.trim().split("\\s+", 4);
+            String[] parts = input.trim().split("\\s+");
             String command = parts[0].toLowerCase();
 
             switch (command) {
