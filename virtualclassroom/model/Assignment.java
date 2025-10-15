@@ -1,23 +1,19 @@
 package virtualclassroom.model;
 
-import java.time.LocalDateTime;
-
 public class Assignment {
     private final String classroomName;
-    private final String details;
-    private final LocalDateTime scheduledDate;
+    private final String assignmentId;
 
-    public Assignment(String classroomName, String details) {
+    public Assignment(String classroomName, String assignmentId) {
         this.classroomName = classroomName;
-        this.details = details;
-        this.scheduledDate = LocalDateTime.now();
+        this.assignmentId = assignmentId;
     }
 
-    public String getClassroomName() { return classroomName; }
-    public String getDetails() { return details; }
-    public LocalDateTime getScheduledDate() { return scheduledDate; }
+    public String getClassroomName() {
+        return classroomName;
+    }
 
-    public String getKey() {
-        return classroomName + ":" + details;
+    public String getAssignmentId() {
+        return assignmentId;
     }
 }
