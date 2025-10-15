@@ -15,7 +15,4 @@ public abstract class RemoteControl {
     }
 
     public abstract void togglePower();
-    public abstract void volumeUp();
-    public abstract void volumeDown();
-    public abstract void displayStatus();
 }
